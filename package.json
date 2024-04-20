@@ -1,0 +1,24 @@
+{
+    "name": "backend-hw-socket",
+    "version": "1.0.0",
+    "description": "A simple backend for a socket-based auction system",
+    "main": "server.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node server.js"
+    },
+    "keywords": [
+      "socket.io",
+      "express",
+      "real-time",
+      "auction"
+    ],
+    "author": "Your Name",
+    "license": "ISC",
+    "dependencies": {
+      "express": "^4.19.2",
+      "socket.io": "^4.7.5",
+      "socket.io-client": "^4.7.5"
+    }
+  }
+  
