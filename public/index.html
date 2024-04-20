@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Müzayede Sistemi</title>
@@ -7,9 +8,11 @@
         body {
             font-family: Arial, sans-serif;
         }
+
         #mainContainer {
             padding-left: 20px;
         }
+
         #auctionsContainer {
             position: fixed;
             top: 0;
@@ -21,9 +24,11 @@
             padding: 10px;
             box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
         }
+
         form {
             margin-bottom: 20px;
         }
+
         .auction {
             margin-bottom: 10px;
             padding: 10px;
@@ -31,11 +36,13 @@
             border-radius: 5px;
             background-color: #fff;
         }
+
         .auction h4 {
             margin: 0;
             font-size: 1.2em;
             color: #333;
         }
+
         .auction p {
             margin: 5px 0;
             font-size: 1em;
@@ -45,53 +52,68 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-    var socket = io.connect('http://localhost:3000');
+            var socket = io.connect('http://localhost:3000');
 
-    document.getElementById('createAuction').addEventListener('submit', function (e) {
-        e.preventDefault();
-        var item = document.getElementById('item').value;
-        var startingBid = document.getElementById('startingBid').value;
-        socket.emit('createAuction', { item: item, startingBid: startingBid });
-    });
+            document.getElementById('createAuction').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var item = document.getElementById('item').value;
+                var startingBid = document.getElementById('startingBid').value;
+                socket.emit('createAuction', { item: item, startingBid: startingBid });
+            });
+            document.getElementById('placeBid').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var auctionId = document.getElementById('auctionId').value;
+                var bid = document.getElementById('bid').value;
+                socket.emit('placeBid', { auctionId: auctionId, bid: parseInt(bid) });
+            });
 
-    socket.on('auctionData', function (auctions) {
-        var auctionsContainer = document.getElementById('auctionsContainer');
-        auctionsContainer.innerHTML = '';
-        Object.keys(auctions).forEach(function (auctionId) {
-            var auction = auctions[auctionId];
-            var auctionDiv = document.createElement('div');
-            auctionDiv.className = 'auction';
-            auctionDiv.innerHTML = `<h4>${auction.item}</h4>
-                                    <p>Şu anki teklif: ${auction.startingBid}</p>
-                                    <p>Teklifler: ${auction.bids.join(', ')}</p>
-                                    <p>${auction.auctionId}`;
-            auctionsContainer.appendChild(auctionDiv);
+
+            socket.on('auctionData', function (auctions) {
+                var auctionsContainer = document.getElementById('auctionsContainer');
+                auctionsContainer.innerHTML = '';
+                Object.keys(auctions).forEach(function (auctionId) {
+                    var auction = auctions[auctionId];
+                    var auctionDiv = document.createElement('div');
+                    auctionDiv.className = 'auction';
+                    auctionDiv.innerHTML = `<h4>${auction.item}</h4>
+                         <p>Şu anki teklif: ${auction.startingBid}</p>
+                         <p>Teklifler: ${auction.bids.join(', ')}</p>
+                         <p>Müzayede ID: ${auction.auctionId}</p>
+                         <button onclick="setAuctionIdForBid('${auctionId}')">Teklif Ver</button>`;
+
+                    auctionsContainer.appendChild(auctionDiv);
+                });
+            });
         });
-    });
-});
+        function setAuctionIdForBid(auctionId) {
+            // Teklif verme formundaki müzayede ID alanını doldur
+            document.getElementById('auctionId').value = auctionId;
+        }
 
     </script>
-    
+
 </head>
+
 <body>
     <div id="mainContainer">
         <h1>Müzayede Sistemi</h1>
-        
+
         <form id="createAuction">
             <input type="text" id="item" placeholder="Ürün Adı" required />
             <input type="number" id="startingBid" placeholder="Başlangıç Fiyatı" required />
             <button type="submit">Müzayede Oluştur</button>
         </form>
-        
+
         <form id="placeBid">
             <input type="text" id="auctionId" placeholder="Müzayede ID" required />
             <input type="number" id="bid" placeholder="Teklif" required />
             <button type="submit">Teklif Ver</button>
         </form>
     </div>
-    
+
     <div id="auctionsContainer">
         <!-- Müzayede ve teklif bilgileri burada gösterilecek -->
     </div>
 </body>
+
 </html>

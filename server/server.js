@@ -1,7 +1,8 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-
+const { Mutex } = require('async-mutex');
+const mutex = new Mutex();
 // App setup
 const app = express();
 const server = http.createServer(app);
@@ -29,17 +30,24 @@ io.on('connection', (socket) => {
       console.log('Auction created:', auctions[auctionId]);
   });
 
-  // Teklif verme isteğini işle
   socket.on('placeBid', data => {
-      const auction = auctions[data.auctionId];
-      if (auction && data.bid > auction.startingBid) {
-          auction.bids.push(data.bid);
-          auction.startingBid = data.bid;
-          io.emit('auctionData', auctions); // Tüm kullanıcılara güncel müzayede verisini gönder
-          console.log('Bid placed on auction:', data.auctionId, 'with bid:', data.bid);
-      } else {
-          socket.emit('error', 'Invalid bid or auction ID.');
-      }
+    const auction = auctions[data.auctionId];
+    if (auction && data.bid > auction.startingBid) {
+      // Yeni teklifi teklifler listesine ekle
+      auction.bids.push({
+        bid: data.bid,
+        bidder: socket.id  // Teklif verenin kimliği, daha iyi yönetim için ekleyebilirsiniz
+      });
+      // En yüksek teklifi güncelle
+      auction.startingBid = data.bid;
+
+      // Tüm kullanıcılara güncel müzayede verisini gönder
+      io.emit('auctionData', auctions);
+      console.log(`Bid placed on auction: ${data.auctionId} with bid: ${data.bid}`);
+    } else {
+      // Geçersiz teklif veya müzayede ID durumunda hata mesajı gönder
+      socket.emit('error', 'Invalid bid or auction ID.');
+    }
   });
 
   socket.on('disconnect', () => {
