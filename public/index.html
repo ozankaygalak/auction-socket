@@ -1,16 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Müzayede Sistemi</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            color: #333;
         }
 
         #mainContainer {
-            padding-left: 20px;
+            padding: 20px;
+            width: calc(100% - 320px);
+            box-sizing: border-box;
         }
 
         #auctionsContainer {
@@ -19,36 +21,80 @@
             right: 0;
             width: 300px;
             height: 100vh;
-            background-color: #f9f9f9;
+            background-color: #fff;
             overflow-y: auto;
             padding: 10px;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
         }
 
         form {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
 
-        .auction {
-            margin-bottom: 10px;
+        input[type="text"], input[type="number"] {
+            width: 100%;
             padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #5cb85c;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .auction {
+            background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 5px;
-            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .auction h4 {
-            margin: 0;
-            font-size: 1.2em;
-            color: #333;
+            color: #5cb85c;
         }
 
         .auction p {
-            margin: 5px 0;
-            font-size: 1em;
             color: #666;
         }
+
+        #bidsContainer {
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .bid {
+            background-color: #e9e9e9;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
     </style>
+</head>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -65,8 +111,8 @@
                 var auctionId = document.getElementById('auctionId').value;
                 var bid = document.getElementById('bid').value;
                 socket.emit('placeBid', { auctionId: auctionId, bid: parseInt(bid) });
+                addBidToList(auctionId, bid); // Teklifleri listeye ekle
             });
-
 
             socket.on('auctionData', function (auctions) {
                 var auctionsContainer = document.getElementById('auctionsContainer');
@@ -77,16 +123,25 @@
                     auctionDiv.className = 'auction';
                     auctionDiv.innerHTML = `<h4>${auction.item}</h4>
                          <p>Şu anki teklif: ${auction.startingBid}</p>
-                         <p>Teklifler: ${auction.bids.join(', ')}</p>
+                         
                          <p>Müzayede ID: ${auction.auctionId}</p>
                          <button onclick="setAuctionIdForBid('${auctionId}')">Teklif Ver</button>`;
 
                     auctionsContainer.appendChild(auctionDiv);
                 });
             });
+
+            // Teklifler listesini ekrana basma işlevi
+            function addBidToList(auctionId, bid) {
+                var bidsContainer = document.getElementById('bidsContainer');
+                var bidDiv = document.createElement('div');
+                bidDiv.className = 'bid';
+                bidDiv.innerHTML = `Auction ID: ${auctionId}, Bid: ${bid}`;
+                bidsContainer.appendChild(bidDiv);
+            }
         });
+
         function setAuctionIdForBid(auctionId) {
-            // Teklif verme formundaki müzayede ID alanını doldur
             document.getElementById('auctionId').value = auctionId;
         }
 
@@ -109,6 +164,10 @@
             <input type="number" id="bid" placeholder="Teklif" required />
             <button type="submit">Teklif Ver</button>
         </form>
+
+        <div id="bidsContainer">
+            <!-- Teklifler burada listelenecek -->
+        </div>
     </div>
 
     <div id="auctionsContainer">
